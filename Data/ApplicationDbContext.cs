@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using SchuelerCheckIN2025.Models;
 
 namespace SchuelerCheckIN2025.Data
 {
@@ -9,5 +10,7 @@ namespace SchuelerCheckIN2025.Data
             : base(options)
         {
         }
+
+        public DbSet<Schuelerdaten> Schuelerdatenset { get; set; }
     }
 }

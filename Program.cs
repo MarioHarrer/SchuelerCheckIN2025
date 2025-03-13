@@ -10,8 +10,8 @@ namespace SchuelerCheckIN2025
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
-            builder.Services.AddDbContext<SchuelerCheckIN2025Context>(options =>
-                options.UseSqlServer(builder.Configuration.GetConnectionString("SchuelerCheckIN2025Context") ?? throw new InvalidOperationException("Connection string 'SchuelerCheckIN2025Context' not found.")));
+            //builder.Services.AddDbContext<SchuelerCheckIN2025Context>(options =>
+            //    options.UseSqlServer(builder.Configuration.GetConnectionString("SchuelerCheckIN2025Context") ?? throw new InvalidOperationException("Connection string 'SchuelerCheckIN2025Context' not found.")));
 
             // Add services to the container.
             var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");

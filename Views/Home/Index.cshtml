@@ -1,4 +1,6 @@
-﻿@{
+﻿@model List<Schuelerdaten>
+
+@{
     ViewData["Title"] = "Home Page";
 }
 
@@ -6,3 +8,35 @@
     <h1 class="display-4">Welcome</h1>
     <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
 </div>
+
+<table>
+    <thead>
+        <tr>
+            <th> e-mail </th>
+            <th> klasse </th>
+            <th> schluessel </th>
+        </tr>
+    </thead>
+
+    <tbody>
+        @foreach(var item in Model)
+        {
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.email)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.klasse)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.schluessel)
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+
+<a asp-action="Tues" asp-controller="Home">tu es</a>
+
+
