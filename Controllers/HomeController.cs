@@ -17,6 +17,7 @@ namespace SchuelerCheckIN2025.Controllers
             _logger = logger;
             _context = context;
             _userManager = userManager;
+           
         }
 
         public async Task<IActionResult> Index()
@@ -38,6 +39,18 @@ namespace SchuelerCheckIN2025.Controllers
                     // Wenn der Benutzer gefunden wurde, kannst du z.B. weitere Daten abfragen und auf der Konsole ausgeben
                     Console.WriteLine($"Benutzer ID: {user.Id}");
                     Console.WriteLine($"Benutzer E-Mail: {user.Email}");
+
+                    Schuelerdaten schuelerdaten = new Schuelerdaten();
+                    Guid myGuid = Guid.NewGuid();
+                    string uuid = myGuid.ToString();
+
+                    schuelerdaten.email = user.Email;
+                    schuelerdaten.schluessel = uuid;
+                    schuelerdaten.klasse = "3AHINF";
+
+                    _context.Schuelerdatenset.Add(schuelerdaten);
+                    _context.SaveChanges();
+
                 }
                 else
                 {
