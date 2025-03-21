@@ -1,8 +1,8 @@
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using SchuelerCheckIN2025.Data;
 using SchuelerCheckIN2025.Models;
 using System.Diagnostics;
-
 
 namespace SchuelerCheckIN2025.Controllers
 {
@@ -10,23 +10,46 @@ namespace SchuelerCheckIN2025.Controllers
     {
         private readonly ILogger<HomeController> _logger;
         private readonly ApplicationDbContext _context;
+        private readonly UserManager<IdentityUser> _userManager;
 
-        public HomeController(ILogger<HomeController> logger, ApplicationDbContext context)
+        public HomeController(ILogger<HomeController> logger, ApplicationDbContext context, UserManager<IdentityUser> userManager)
         {
             _logger = logger;
             _context = context;
+            _userManager = userManager;
         }
 
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
-            
-
             List<Schuelerdaten> schueler = _context.Schuelerdatenset.ToList();
+
+            bool IsAuth = (User.Identity is not null) ? User.Identity.IsAuthenticated : false;
+
+            if (IsAuth)
+            {
+                var userName = User.Identity?.Name;  // Name des aktuell angemeldeten Benutzers
+                Console.WriteLine($"Aktuell angemeldeter Benutzer: {userName}");
+
+                // Hole den Benutzer anhand des Benutzernamens
+                var user = await _userManager.FindByNameAsync(userName);
+
+                if (user != null)
+                {
+                    // Wenn der Benutzer gefunden wurde, kannst du z.B. weitere Daten abfragen und auf der Konsole ausgeben
+                    Console.WriteLine($"Benutzer ID: {user.Id}");
+                    Console.WriteLine($"Benutzer E-Mail: {user.Email}");
+                }
+                else
+                {
+                    Console.WriteLine("Benutzer nicht gefunden!");
+                }
+            }
 
             return View(schueler);
         }
 
-		public IActionResult Tues()
+
+        public IActionResult Tues()
         {
             Schuelerdaten schuelerdaten = new Schuelerdaten();
             schuelerdaten.email = "dhfsfs";
