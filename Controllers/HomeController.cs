@@ -19,14 +19,14 @@ namespace SchuelerCheckIN2025.Controllers
 
         public IActionResult Index()
         {
-     
+            
 
             List<Schuelerdaten> schueler = _context.Schuelerdatenset.ToList();
 
             return View(schueler);
         }
 
-        public IActionResult Tues()
+		public IActionResult Tues()
         {
             Schuelerdaten schuelerdaten = new Schuelerdaten();
             schuelerdaten.email = "dhfsfs";
