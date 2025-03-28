@@ -52,19 +52,6 @@ namespace SchuelerCheckIN2025.Controllers
             return View(schueler);
         }
 
-        public IActionResult Tues()
-        {
-            Schuelerdaten schuelerdaten = new Schuelerdaten();
-            schuelerdaten.email = "dhfsfs";
-            schuelerdaten.schluessel = "df";
-            schuelerdaten.klasse = "3ahinf";
-
-            _context.Schuelerdatenset.Add(schuelerdaten);
-            _context.SaveChanges();
-
-            return RedirectToAction(nameof(Index));
-        }
-
         public IActionResult Privacy()
         {
 
