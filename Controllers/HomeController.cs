@@ -27,58 +27,30 @@ namespace SchuelerCheckIN2025.Controllers
             List<Schuelerdaten> schueler = _context.Schuelerdatenset.ToList();
             bool UserExists = false;
 
-
-            bool IsAuth = (User.Identity is not null) ? User.Identity.IsAuthenticated : false;
-
-            if (IsAuth)
+            if (User.Identity?.IsAuthenticated == true)
             {
-                var userName = User.Identity?.Name;  // Name des aktuell angemeldeten Benutzers
-                Console.WriteLine($"Aktuell angemeldeter Benutzer: {userName}");
-
-                // Hole den Benutzer anhand des Benutzernamens
-                var user = await _userManager.FindByNameAsync(userName);
+                var user = await _userManager.FindByNameAsync(User.Identity.Name);
 
                 if (user != null)
                 {
-                    for(int i = 0; i < schueler.Count(); i++)
+                    var existingSchueler = _context.Schuelerdatenset.FirstOrDefault(s => s.email == user.Email);
+
+                    if (existingSchueler == null) // Nur hinzufügen, wenn kein Eintrag existiert
                     {
-                        if (user.Email == schueler[i].email)
+                        _context.Schuelerdatenset.Add(new Schuelerdaten
                         {
-                            UserExists = true;
-                        }
-                    }
-                    if(UserExists = true)
-                    {
-                        // Wenn der Benutzer gefunden wurde, kannst du z.B. weitere Daten abfragen und auf der Konsole ausgeben
-                        Console.WriteLine($"Benutzer ID: {user.Id}");
-                        Console.WriteLine($"Benutzer E-Mail: {user.Email}");
+                            email = user.Email,
+                            schluessel = Guid.NewGuid().ToString(),
+                            klasse = "3AHINF"
+                        });
 
-
-
-                        Schuelerdaten schuelerdaten = new Schuelerdaten();
-                        Guid myGuid = Guid.NewGuid();
-                        string uuid = myGuid.ToString();
-
-                        schuelerdaten.email = user.Email;
-                        schuelerdaten.schluessel = uuid;
-                        schuelerdaten.klasse = "3AHINF";
-
-                        _context.Schuelerdatenset.Add(schuelerdaten);
                         _context.SaveChanges();
-
                     }
-
-
-                }
-                else
-                {
-                    Console.WriteLine("Benutzer nicht gefunden!");
                 }
             }
 
             return View(schueler);
         }
-
 
         public IActionResult Tues()
         {
