@@ -24,43 +24,30 @@ namespace SchuelerCheckIN2025.Controllers
         {
             List<Schuelerdaten> schueler = _context.Schuelerdatenset.ToList();
 
-            bool IsAuth = (User.Identity is not null) ? User.Identity.IsAuthenticated : false;
-
-            if (IsAuth)
+            if (User.Identity?.IsAuthenticated == true)
             {
-                var userName = User.Identity?.Name;  // Name des aktuell angemeldeten Benutzers
-                Console.WriteLine($"Aktuell angemeldeter Benutzer: {userName}");
-
-                // Hole den Benutzer anhand des Benutzernamens
-                var user = await _userManager.FindByNameAsync(userName);
+                var user = await _userManager.FindByNameAsync(User.Identity.Name);
 
                 if (user != null)
                 {
-                    // Wenn der Benutzer gefunden wurde, kannst du z.B. weitere Daten abfragen und auf der Konsole ausgeben
-                    Console.WriteLine($"Benutzer ID: {user.Id}");
-                    Console.WriteLine($"Benutzer E-Mail: {user.Email}");
+                    var existingSchueler = _context.Schuelerdatenset.FirstOrDefault(s => s.email == user.Email);
 
-                    Schuelerdaten schuelerdaten = new Schuelerdaten();
-                    Guid myGuid = Guid.NewGuid();
-                    string uuid = myGuid.ToString();
+                    if (existingSchueler == null) // Nur hinzufügen, wenn kein Eintrag existiert
+                    {
+                        _context.Schuelerdatenset.Add(new Schuelerdaten
+                        {
+                            email = user.Email,
+                            schluessel = Guid.NewGuid().ToString(),
+                            klasse = "3AHINF"
+                        });
 
-                    schuelerdaten.email = user.Email;
-                    schuelerdaten.schluessel = uuid;
-                    schuelerdaten.klasse = "3AHINF";
-
-                    _context.Schuelerdatenset.Add(schuelerdaten);
-                    _context.SaveChanges();
-
-                }
-                else
-                {
-                    Console.WriteLine("Benutzer nicht gefunden!");
+                        _context.SaveChanges();
+                    }
                 }
             }
 
             return View(schueler);
         }
-
 
         public IActionResult Tues()
         {
