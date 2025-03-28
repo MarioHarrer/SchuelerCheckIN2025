@@ -10,30 +10,34 @@ namespace SchuelerCheckIN2025
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
-            //builder.Services.AddDbContext<SchuelerCheckIN2025Context>(options =>
-            //    options.UseSqlServer(builder.Configuration.GetConnectionString("SchuelerCheckIN2025Context") ?? throw new InvalidOperationException("Connection string 'SchuelerCheckIN2025Context' not found.")));
 
-            // Add services to the container.
-            var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
+            // SQLite-Verbindung anstelle von MSSQL
+            var connectionString = builder.Configuration.GetConnectionString("SchuelerCheckIN2025Context")
+                                   ?? throw new InvalidOperationException("Connection string 'SchuelerCheckIN2025Context' not found.");
+
+            // DbContext mit SQLite konfigurieren
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
-                options.UseSqlServer(connectionString));
+                options.UseSqlite(connectionString)); // Verwende UseSqlite anstelle von UseSqlServer
+
             builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
+            // Identity Setup
             builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = false)
                 .AddEntityFrameworkStores<ApplicationDbContext>();
+
+            // MVC und Razor Pages
             builder.Services.AddControllersWithViews();
 
             var app = builder.Build();
 
-            // Configure the HTTP request pipeline.
+            // Konfiguration der HTTP-Anforderungs-Pipeline
             if (app.Environment.IsDevelopment())
             {
-                app.UseMigrationsEndPoint();
+                app.UseMigrationsEndPoint(); // Ermöglicht das Migrations-Tool
             }
             else
             {
                 app.UseExceptionHandler("/Home/Error");
-                // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
                 app.UseHsts();
             }
 
@@ -44,6 +48,7 @@ namespace SchuelerCheckIN2025
 
             app.UseAuthorization();
 
+            // Standard-Routing
             app.MapControllerRoute(
                 name: "default",
                 pattern: "{controller=Home}/{action=Index}/{id?}");
@@ -52,4 +57,5 @@ namespace SchuelerCheckIN2025
             app.Run();
         }
     }
+
 }
