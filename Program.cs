@@ -12,7 +12,7 @@ namespace SchuelerCheckIN2025
             var builder = WebApplication.CreateBuilder(args);
 
             // SQLite-Verbindung anstelle von MSSQL
-            var connectionString = builder.Configuration.GetConnectionString("SchuelerCheckIN2025Context")
+            var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
                                    ?? throw new InvalidOperationException("Connection string 'SchuelerCheckIN2025Context' not found.");
 
             // DbContext mit SQLite konfigurieren

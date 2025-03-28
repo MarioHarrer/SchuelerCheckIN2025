@@ -17,14 +17,12 @@ namespace SchuelerCheckIN2025.Controllers
             _logger = logger;
             _context = context;
             _userManager = userManager;
-            
-
-
         }
 
         public async Task<IActionResult> Index()
         {
             List<Schuelerdaten> schueler = _context.Schuelerdatenset.ToList();
+
             bool UserExists = false;
 
             if (User.Identity?.IsAuthenticated == true)
