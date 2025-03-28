@@ -17,49 +17,39 @@ namespace SchuelerCheckIN2025.Controllers
             _logger = logger;
             _context = context;
             _userManager = userManager;
+            
+
+
         }
 
         public async Task<IActionResult> Index()
         {
             List<Schuelerdaten> schueler = _context.Schuelerdatenset.ToList();
+            bool UserExists = false;
 
-            bool IsAuth = (User.Identity is not null) ? User.Identity.IsAuthenticated : false;
-
-            if (IsAuth)
+            if (User.Identity?.IsAuthenticated == true)
             {
-                var userName = User.Identity?.Name;  // Name des aktuell angemeldeten Benutzers
-                Console.WriteLine($"Aktuell angemeldeter Benutzer: {userName}");
-
-                // Hole den Benutzer anhand des Benutzernamens
-                var user = await _userManager.FindByNameAsync(userName);
+                var user = await _userManager.FindByNameAsync(User.Identity.Name);
 
                 if (user != null)
                 {
-                    // Wenn der Benutzer gefunden wurde, kannst du z.B. weitere Daten abfragen und auf der Konsole ausgeben
-                    Console.WriteLine($"Benutzer ID: {user.Id}");
-                    Console.WriteLine($"Benutzer E-Mail: {user.Email}");
-                }
-                else
-                {
-                    Console.WriteLine("Benutzer nicht gefunden!");
+                    var existingSchueler = _context.Schuelerdatenset.FirstOrDefault(s => s.email == user.Email);
+
+                    if (existingSchueler == null) // Nur hinzufügen, wenn kein Eintrag existiert
+                    {
+                        _context.Schuelerdatenset.Add(new Schuelerdaten
+                        {
+                            email = user.Email,
+                            schluessel = Guid.NewGuid().ToString(),
+                            klasse = "3AHINF"
+                        });
+
+                        _context.SaveChanges();
+                    }
                 }
             }
 
             return View(schueler);
-        }
-
-
-        public IActionResult Tues()
-        {
-            Schuelerdaten schuelerdaten = new Schuelerdaten();
-            schuelerdaten.email = "dhfsfs";
-            schuelerdaten.schluessel = "df";
-            schuelerdaten.klasse = "3ahinf";
-
-            _context.Schuelerdatenset.Add(schuelerdaten);
-            _context.SaveChanges();
-
-            return RedirectToAction(nameof(Index));
         }
 
         public IActionResult Privacy()
