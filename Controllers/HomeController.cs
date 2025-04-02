@@ -3,6 +3,11 @@ using Microsoft.AspNetCore.Mvc;
 using SchuelerCheckIN2025.Data;
 using SchuelerCheckIN2025.Models;
 using System.Diagnostics;
+using System.Drawing;
+using System.Net.NetworkInformation;
+using System.Drawing;
+using ZXing.Common;
+using ZXing;
 
 namespace SchuelerCheckIN2025.Controllers
 {
@@ -22,31 +27,76 @@ namespace SchuelerCheckIN2025.Controllers
 
         public async Task<IActionResult> Index()
         {
-            List<Schuelerdaten> schueler = _context.Schuelerdatenset.ToList();
+            bool IsAuth = (User.Identity is not null) ? User.Identity.IsAuthenticated : false;
 
-            if (User.Identity?.IsAuthenticated == true)
+            if (IsAuth)
             {
-                var user = await _userManager.FindByNameAsync(User.Identity.Name);
+                var userName = User.Identity?.Name;
+                var user = await _userManager.FindByNameAsync(userName);
 
                 if (user != null)
                 {
-                    var existingSchueler = _context.Schuelerdatenset.FirstOrDefault(s => s.email == user.Email);
+                    // Prüfen, ob bereits ein QR-Code existiert
+                    var letzterEintrag = _context.Schuelerdatenset
+                        .Where(s => s.email == user.Email)
+                        .OrderByDescending(s => s.Id) // Annahme: Id ist aufsteigend
+                        .FirstOrDefault();
 
-                    if (existingSchueler == null) // Nur hinzufügen, wenn kein Eintrag existiert
+                    string uuid;
+
+                    if (letzterEintrag == null)
                     {
-                        _context.Schuelerdatenset.Add(new Schuelerdaten
+                        // Neuen Eintrag erstellen
+                        uuid = Guid.NewGuid().ToString();
+
+                        var schuelerdaten = new Schuelerdaten
                         {
                             email = user.Email,
-                            schluessel = Guid.NewGuid().ToString(),
+                            schluessel = uuid,
                             klasse = "3AHINF"
-                        });
+                        };
 
+                        _context.Schuelerdatenset.Add(schuelerdaten);
                         _context.SaveChanges();
+                    }
+                    else
+                    {
+                        // Falls es bereits einen QR-Code gibt, nutze ihn
+                        uuid = letzterEintrag.schluessel;
+                    }
+
+                    // QR-Code generieren
+                    int width = 300;
+                    int height = 300;
+                    var writer = new BarcodeWriter<Bitmap>()
+                    {
+                        Format = BarcodeFormat.QR_CODE,
+                        Renderer = new ZXing.Windows.Compatibility.BitmapRenderer(),
+                        Options = new EncodingOptions
+                        {
+                            Height = height,
+                            Width = width,
+                            Margin = 1
+                        }
+                    };
+
+                    using (var qrCodeImage = writer.Write(uuid))
+                    {
+                        using (MemoryStream ms = new MemoryStream())
+                        {
+                            qrCodeImage.Save(ms, System.Drawing.Imaging.ImageFormat.Png);
+                            byte[] byteImage = ms.ToArray();
+                            string base64String = Convert.ToBase64String(byteImage);
+
+                            // Base64-String in ViewData speichern
+                            ViewData["QRCode"] = "data:image/png;base64," + base64String;
+                        }
                     }
                 }
             }
 
-            return View(schueler);
+            return View();
+
         }
 
         public IActionResult Tues()
