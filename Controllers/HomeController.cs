@@ -120,7 +120,7 @@ namespace SchuelerCheckIN2025.Controllers
             return await _userManager.FindByNameAsync(userName);
         }
 
-        private string GetOrCreateUuid(IdentityUser user)
+        private string GetOrCreateUuidd(IdentityUser user)
         {
             var letzterEintrag = _context.Schuelerdatenset
                 .Where(s => s.email == user.Email)
