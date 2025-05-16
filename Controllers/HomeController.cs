@@ -8,6 +8,9 @@ using System.Net.NetworkInformation;
 using System.Drawing;
 using ZXing.Common;
 using ZXing;
+using ZXing.Rendering;
+using static System.Net.Mime.MediaTypeNames;
+using System.Text;
 
 namespace SchuelerCheckIN2025.Controllers
 {
