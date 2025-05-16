@@ -14,7 +14,7 @@ using System.Text;
 using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace SchuelerCheckIN2025.Controllers
-{
+{ 
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
@@ -133,21 +133,29 @@ namespace SchuelerCheckIN2025.Controllers
 
             if (letzterEintrag == null)
             {
-                string uuid = Guid.NewGuid().ToString();
-                var schuelerdaten = new Schuelerdaten
-                {
-                    email = user.Email,
-                    schluessel = uuid,
-                    klasse = "3AHINF"
-                };
+                Schuelerdaten daten = createDatenFromUser(user, _context, "UNBEKANNT");
 
-                _context.Schuelerdatenset.Add(schuelerdaten);
-                _context.SaveChanges();
-
-                return uuid;
+                return daten.schluessel;
             }
 
             return letzterEintrag.schluessel;
+        }
+
+        public static Schuelerdaten createDatenFromUser(IdentityUser user, ApplicationDbContext context, string klasse)
+        {
+            string uuid = Guid.NewGuid().ToString();
+            var schuelerdaten = new Schuelerdaten
+            {
+                email = user.Email,
+                schluessel = uuid,
+                klasse = klasse,
+                anwesend = true,
+            };
+
+            context.Schuelerdatenset.Add(schuelerdaten);
+            context.SaveChanges();
+
+            return schuelerdaten;
         }
 
         private string GenerateQrCodeBase64(string uuid)
