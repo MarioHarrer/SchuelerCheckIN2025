@@ -148,6 +148,7 @@ namespace SchuelerCheckIN2025.Controllers
                 email = user.Email,
                 schluessel = uuid,
                 klasse = klasse,
+                anwesend = true,
             };
 
             context.Schuelerdatenset.Add(schuelerdaten);
