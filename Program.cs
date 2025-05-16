@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using SchuelerCheckIN2025.Data;
 using Microsoft.Extensions.DependencyInjection;
+using SchuelerCheckIN2025.Models;
 
 namespace SchuelerCheckIN2025
 {
@@ -50,7 +51,9 @@ namespace SchuelerCheckIN2025
 
             app.MapPost("/api/anwesend", (ApplicationDbContext context, ScanData scan) =>
             {
-                context.Schuelerdatenset.Where(s => s.schluessel.Equals(scan.Scan));
+                Schuelerdaten daten  = context.Schuelerdatenset.Where(s => s.schluessel.Equals(scan.Scan)).Single();
+                daten.anwesend = true;
+                context.SaveChanges();
             });
 
             // Standard-Routing

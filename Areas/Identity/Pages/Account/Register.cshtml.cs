@@ -16,7 +16,9 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.Extensions.Logging;
 using SchuelerCheckIN2025.Controllers;
 using SchuelerCheckIN2025.Data;
@@ -34,6 +36,7 @@ namespace SchuelerCheckIN2025.Areas.Identity.Pages.Account
         private readonly ILogger<RegisterModel> _logger;
         private readonly IEmailSender _emailSender;
         private readonly ApplicationDbContext _context;
+        public readonly List<SelectListItem> Klasse;
 
         public RegisterModel(
             UserManager<IdentityUser> userManager,
@@ -50,6 +53,12 @@ namespace SchuelerCheckIN2025.Areas.Identity.Pages.Account
             _logger = logger;
             _emailSender = emailSender;
             _context = context;
+            Klasse = new List<SelectListItem>
+        {
+            new SelectListItem { Value = "3AHINF", Text = "3AHINF" },
+            new SelectListItem { Value = "2AHINF", Text = "2AHINF" },
+            new SelectListItem { Value = "1AHINF", Text = "1AHINF" },
+        };
         }
 
         /// <summary>
@@ -124,7 +133,7 @@ namespace SchuelerCheckIN2025.Areas.Identity.Pages.Account
         {
             returnUrl ??= Url.Content("~/");
             ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
-            if (ModelState.IsValid)
+            if (ModelState.IsValid && Input.Email.Equals("@htl-saalfelden.at"))
             {
                 var user = CreateUser();
 
@@ -163,6 +172,11 @@ namespace SchuelerCheckIN2025.Areas.Identity.Pages.Account
                 {
                     ModelState.AddModelError(string.Empty, error.Description);
                 }
+                
+            }
+            else
+            {
+                ModelState.AddModelError(string.Empty, "Bitte verwenden Sie eine gültige HTL-Saalfelden E-Mail-Adresse.");
             }
 
             // If we got this far, something failed, redisplay form

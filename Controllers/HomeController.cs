@@ -149,7 +149,7 @@ namespace SchuelerCheckIN2025.Controllers
                 email = user.Email,
                 schluessel = uuid,
                 klasse = klasse,
-                anwesend = true,
+                anwesend = false,
             };
 
             context.Schuelerdatenset.Add(schuelerdaten);
@@ -184,7 +184,7 @@ namespace SchuelerCheckIN2025.Controllers
         }
 
 
-        private async Task<IdentityUser?> CheckIfUuidExists(string scannedUuid)
+        /*private async Task<IdentityUser?> CheckIfUuidExists(string scannedUuid)
         {
             var alleUuids = _context.Schuelerdatenset
                 .Select(s => s.schluessel)
@@ -200,7 +200,7 @@ namespace SchuelerCheckIN2025.Controllers
             }
 
             return null;
-        }
+        }*/
 
         private async Task<IdentityUser?> CheckIfUuidExistsAsync(string scannedUuid)
         {
@@ -216,20 +216,20 @@ namespace SchuelerCheckIN2025.Controllers
 
 
 
-        public IActionResult Anwesenheit()
+        public IActionResult Anwesenheit(AnwesenheitsViewModel anwesenheitsview)
         {
             var model = new AnwesenheitsViewModel
             {
-                SelectedClass = null,
+                SelectedClass = anwesenheitsview.SelectedClass,
                 ClassList = new List<SelectListItem>
         {
             new SelectListItem { Value = "3AHINF", Text = "3AHINF" },
             new SelectListItem { Value = "2AHINF", Text = "2AHINF" },
             new SelectListItem { Value = "1AHINF", Text = "1AHINF" },
         },
-                Students = new List<Schuelerdaten>() // erstmal leer
+                Students = _context.Schuelerdatenset.Where(s => !s.anwesend).ToList() // erstmal leer
             };
-
+            
             return View(model);
         }
 
@@ -239,5 +239,7 @@ namespace SchuelerCheckIN2025.Controllers
         {
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
         }
+
+        
     }
 }
