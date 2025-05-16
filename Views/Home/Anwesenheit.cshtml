@@ -1,0 +1,44 @@
+﻿@model SchuelerCheckIN2025.Models.AnwesenheitsViewModel
+
+@{
+    ViewData["Title"] = "Abwesende Schüler";
+}
+
+<h1>@ViewData["Title"]</h1>
+
+<form method="post" asp-action="Anwesenheit">
+    <div class="form-group">
+        <label for="selectedClass">Klasse auswählen:</label>
+        <select asp-for="SelectedClass" asp-items="Model.ClassList" class="form-control" id="selectedClass">
+            <option value="">-- Bitte wählen --</option>
+            @* Klassen aus Model.ClassList werden hier angezeigt *@
+        </select>
+    </div>
+    <button type="submit" class="btn btn-primary mt-2">Anzeigen</button>
+</form>
+
+@if (Model.Students != null && Model.Students.Any())
+{
+    <h2 class="mt-4">Abwesende Schüler der Klasse @Model.SelectedClass</h2>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>E-Mail-Adresse</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var student in Model.Students)
+            {
+                <tr>
+                    <td>@student.email</td>
+                    <td>Abwesend</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+else if (!string.IsNullOrEmpty(Model.SelectedClass))
+{
+    <p class="mt-4">Keine abwesenden Schüler in der Klasse @Model.SelectedClass gefunden.</p>
+}

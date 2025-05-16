@@ -11,6 +11,7 @@ using ZXing;
 using ZXing.Rendering;
 using static System.Net.Mime.MediaTypeNames;
 using System.Text;
+using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace SchuelerCheckIN2025.Controllers
 {
@@ -108,7 +109,7 @@ namespace SchuelerCheckIN2025.Controllers
                 var user = await GetCurrentUserAsync();
                 if (user != null)
                 {
-                    string uuid = GetOrCreateUuid(user);
+                    string uuid = GetOrCreateUuidd(user);
                     string qrCodeBase64 = GenerateQrCodeBase64(uuid);
                     ViewData["QRCode"] = "data:image/png;base64," + qrCodeBase64;
                 }
@@ -207,11 +208,23 @@ namespace SchuelerCheckIN2025.Controllers
 
 
 
-        public IActionResult Privacy()
+        public IActionResult Anwesenheit()
         {
+            var model = new AnwesenheitsViewModel
+            {
+                SelectedClass = null,
+                ClassList = new List<SelectListItem>
+        {
+            new SelectListItem { Value = "3AHINF", Text = "3AHINF" },
+            new SelectListItem { Value = "2AHINF", Text = "2AHINF" },
+            new SelectListItem { Value = "1AHINF", Text = "1AHINF" },
+        },
+                Students = new List<Schuelerdaten>() // erstmal leer
+            };
 
-            return View();
+            return View(model);
         }
+
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()

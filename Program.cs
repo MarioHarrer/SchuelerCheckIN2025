@@ -48,6 +48,11 @@ namespace SchuelerCheckIN2025
 
             app.UseAuthorization();
 
+            app.MapPost("/api/anwesend", (ApplicationDbContext context, ScanData scan) =>
+            {
+                context.Schuelerdatenset.Where(s => s.schluessel.Equals(scan.Scan));
+            });
+
             // Standard-Routing
             app.MapControllerRoute(
                 name: "default",
