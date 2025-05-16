@@ -27,70 +27,185 @@ namespace SchuelerCheckIN2025.Controllers
             _userManager = userManager;
         }
 
+        //public async Task<IActionResult> Index()
+        //{
+        //    bool IsAuth = (User.Identity is not null) ? User.Identity.IsAuthenticated : false;
+
+        //    if (IsAuth)
+        //    {
+        //        var userName = User.Identity?.Name;
+        //        var user = await _userManager.FindByNameAsync(userName);
+
+        //        if (user != null)
+        //        {
+        //            // Prüfen, ob bereits ein QR-Code existiert
+        //            var letzterEintrag = _context.Schuelerdatenset
+        //                .Where(s => s.email == user.Email)
+        //                .OrderByDescending(s => s.Id) // Annahme: Id ist aufsteigend
+        //                .FirstOrDefault();
+
+        //            string uuid;
+
+        //            if (letzterEintrag == null)
+        //            {
+        //                // Neuen Eintrag erstellen
+        //                uuid = Guid.NewGuid().ToString();
+
+        //                var schuelerdaten = new Schuelerdaten
+        //                {
+        //                    email = user.Email,
+        //                    schluessel = uuid,
+        //                    klasse = "3AHINF"
+        //                };
+
+        //                _context.Schuelerdatenset.Add(schuelerdaten);
+        //                _context.SaveChanges();
+        //            }
+        //            else
+        //            {
+        //                // Falls es bereits einen QR-Code gibt, nutze ihn
+        //                uuid = letzterEintrag.schluessel;
+        //            }
+
+        //            // QR-Code generieren
+        //            int width = 300;
+        //            int height = 300;
+        //            var writer = new BarcodeWriter<Bitmap>()
+        //            {
+        //                Format = BarcodeFormat.QR_CODE,
+        //                Renderer = new ZXing.Windows.Compatibility.BitmapRenderer(),
+        //                Options = new EncodingOptions
+        //                {
+        //                    Height = height,
+        //                    Width = width,
+        //                    Margin = 1
+        //                }
+        //            };
+
+        //            using (var qrCodeImage = writer.Write(uuid))
+        //            {
+        //                using (MemoryStream ms = new MemoryStream())
+        //                {
+        //                    qrCodeImage.Save(ms, System.Drawing.Imaging.ImageFormat.Png);
+        //                    byte[] byteImage = ms.ToArray();
+        //                    string base64String = Convert.ToBase64String(byteImage);
+
+        //                    // Base64-String in ViewData speichern
+        //                    ViewData["QRCode"] = "data:image/png;base64," + base64String;
+        //                }
+        //            }
+        //        }
+        //    }
+
+        //    return View();
+
+        //}
+
         public async Task<IActionResult> Index()
         {
-            bool IsAuth = (User.Identity is not null) ? User.Identity.IsAuthenticated : false;
-
-            if (IsAuth)
+            if (User.Identity?.IsAuthenticated == true)
             {
-                var userName = User.Identity?.Name;
-                var user = await _userManager.FindByNameAsync(userName);
-
+                var user = await GetCurrentUserAsync();
                 if (user != null)
                 {
-                    // Prüfen, ob bereits ein QR-Code existiert
-                    var letzterEintrag = _context.Schuelerdatenset
-                        .Where(s => s.email == user.Email)
-                        .OrderByDescending(s => s.Id) // Annahme: Id ist aufsteigend
-                        .FirstOrDefault();
-
-                    string uuid;
-
-                    if (letzterEintrag == null)
-                    {
-                        // Neuen Eintrag erstellen
-                        uuid = Guid.NewGuid().ToString();
-
-                        var schuelerdaten = new Schuelerdaten
-                        {
-                            email = user.Email,
-                            schluessel = uuid,
-                            klasse = "3AHINF"
-                        };
-
-                        _context.Schuelerdatenset.Add(schuelerdaten);
-                        _context.SaveChanges();
-                    }
-                    else
-                    {
-                        // Falls es bereits einen QR-Code gibt, nutze ihn
-                        uuid = letzterEintrag.schluessel;
-                    }
-
-                    // QR-Code generieren
-                    int width = 100;
-                    int height = 100;
-                    var writer = new BarcodeWriterSvg
-                    {
-                        Format = BarcodeFormat.QR_CODE,
-                        Options = new EncodingOptions
-                        {
-                            Height = height,
-                            Width = width,
-                            Margin = 1
-                        }
-                    };
-
-                    
-                    var svg = writer.Write(uuid); // SVG-Code für den QR-Code generieren
-                    string svgBase64 = Convert.ToBase64String(Encoding.UTF8.GetBytes(svg.Content));
-                    ViewData["QRCode"] = "data:image/svg+xml;base64," + svgBase64;
+                    string uuid = GetOrCreateUuid(user);
+                    string qrCodeBase64 = GenerateQrCodeBase64(uuid);
+                    ViewData["QRCode"] = "data:image/png;base64," + qrCodeBase64;
                 }
             }
 
             return View();
-
         }
+
+        private async Task<IdentityUser?> GetCurrentUserAsync()
+        {
+            var userName = User.Identity?.Name;
+            return await _userManager.FindByNameAsync(userName);
+        }
+
+        private string GetOrCreateUuidd(IdentityUser user)
+        {
+            var letzterEintrag = _context.Schuelerdatenset
+                .Where(s => s.email == user.Email)
+                .OrderByDescending(s => s.Id)
+                .FirstOrDefault();
+
+            if (letzterEintrag == null)
+            {
+                string uuid = Guid.NewGuid().ToString();
+                var schuelerdaten = new Schuelerdaten
+                {
+                    email = user.Email,
+                    schluessel = uuid,
+                    klasse = "3AHINF"
+                };
+
+                _context.Schuelerdatenset.Add(schuelerdaten);
+                _context.SaveChanges();
+
+                return uuid;
+            }
+
+            return letzterEintrag.schluessel;
+        }
+
+        private string GenerateQrCodeBase64(string uuid)
+        {
+            int width = 300;
+            int height = 300;
+            var writer = new BarcodeWriter<Bitmap>()
+            {
+                Format = BarcodeFormat.QR_CODE,
+                Renderer = new ZXing.Windows.Compatibility.BitmapRenderer(),
+                Options = new EncodingOptions
+                {
+                    Height = height,
+                    Width = width,
+                    Margin = 1
+                }
+            };
+
+            using (var qrCodeImage = writer.Write(uuid))
+            using (MemoryStream ms = new MemoryStream())
+            {
+                qrCodeImage.Save(ms, System.Drawing.Imaging.ImageFormat.Png);
+                byte[] byteImage = ms.ToArray();
+                return Convert.ToBase64String(byteImage);
+            }
+        }
+
+
+        private async Task<IdentityUser?> CheckIfUuidExists(string scannedUuid)
+        {
+            var alleUuids = _context.Schuelerdatenset
+                .Select(s => s.schluessel)
+                .ToList();
+
+            foreach (var uuid in alleUuids)
+            {
+                if (uuid == scannedUuid)
+                {
+                    var userName = User.Identity?.Name;
+                    return await _userManager.FindByNameAsync(userName);
+                }
+            }
+
+            return null;
+        }
+
+        private async Task<IdentityUser?> CheckIfUuidExistsAsync(string scannedUuid)
+        {
+            var schuelerdaten = _context.Schuelerdatenset
+                .FirstOrDefault(s => s.schluessel == scannedUuid);
+
+            if (schuelerdaten != null)
+            { 
+                return await _userManager.FindByEmailAsync(schuelerdaten.email);
+            }
+            return null;
+        }
+
+
 
         public IActionResult Privacy()
         {
