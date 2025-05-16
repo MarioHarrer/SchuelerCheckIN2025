@@ -13,7 +13,7 @@ using static System.Net.Mime.MediaTypeNames;
 using System.Text;
 
 namespace SchuelerCheckIN2025.Controllers
-{
+{ 
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
