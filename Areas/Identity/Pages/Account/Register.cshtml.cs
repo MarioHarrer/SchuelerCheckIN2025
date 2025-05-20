@@ -8,6 +8,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Text.Encodings.Web;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
@@ -37,6 +38,8 @@ namespace SchuelerCheckIN2025.Areas.Identity.Pages.Account
         private readonly IEmailSender _emailSender;
         private readonly ApplicationDbContext _context;
         public readonly List<SelectListItem> Klasse;
+        Regex r = new Regex(@"\w*\.\w*\@htl-saalfelden.at");
+
 
         public RegisterModel(
             UserManager<IdentityUser> userManager,
@@ -133,7 +136,7 @@ namespace SchuelerCheckIN2025.Areas.Identity.Pages.Account
         {
             returnUrl ??= Url.Content("~/");
             ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
-            if (ModelState.IsValid && Input.Email.Equals("@htl-saalfelden.at"))
+            if (ModelState.IsValid && r.IsMatch(Input.Email))
             {
                 var user = CreateUser();
 
