@@ -18,7 +18,7 @@
 
 @if (string.IsNullOrEmpty(Model.SelectedClass))
 {
-    <p class="mt-4 text-warning">Bitte wählen Sie eine Klasse aus, um die abwesenden Schüler anzuzeigen.</p>
+    <h4 class=" mt-4">Bitte wählen Sie eine Klasse aus, um die abwesenden Schüler anzuzeigen.</h4>
 }
 else
 {
@@ -26,19 +26,23 @@ else
 
     if (filteredStudents != null && filteredStudents.Any())
     {
-        <h2 class="mt-4">Abwesende Schüler der Klasse @Model.SelectedClass</h2>
+        <h4 class="mt-4">Abwesende Schüler der Klasse @Model.SelectedClass</h4>
         <table class="table table-striped">
             <thead>
                 <tr>
-                    <th>E-Mail-Adresse</th>
+                    <th>Vor- und Nachname</th>
                     <th>Status</th>
                 </tr>
             </thead>
             <tbody>
                 @foreach (var student in filteredStudents)
                 {
+                    var emailParts = student.email?.Split('@')?[0]?.Split('.');
+                    var firstName = emailParts?.Length > 0 ? char.ToUpper(emailParts[0][0]) + emailParts[0].Substring(1) : "Unbekannt";
+                    var lastName = emailParts?.Length > 1 ? char.ToUpper(emailParts[1][0]) + emailParts[1].Substring(1) : "";
+
                     <tr>
-                        <td>@student.email</td>
+                        <td>@firstName @lastName</td>
                         <td>Abwesend</td>
                     </tr>
                 }
@@ -47,6 +51,6 @@ else
     }
     else
     {
-        <p class="mt-4">Keine abwesenden Schüler in der Klasse @Model.SelectedClass gefunden.</p>
+        <h4 class="mt-4">Aktuell abwesenden Schüler in der Klasse @Model.SelectedClass!</h4>
     }
 }

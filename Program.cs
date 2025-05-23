@@ -63,7 +63,14 @@ namespace SchuelerCheckIN2025
             app.MapPost("/api/anwesend", (ApplicationDbContext context, ScanData scan) =>
             {
                 Schuelerdaten daten  = context.Schuelerdatenset.Where(s => s.schluessel.Equals(scan.Scan)).Single();
-                daten.anwesend = true;
+                if(daten.anwesend== false)
+                {
+                    daten.anwesend = true;
+                }
+                else
+                {
+                    daten.anwesend = false;
+                }
                 context.SaveChanges();
             });
 
