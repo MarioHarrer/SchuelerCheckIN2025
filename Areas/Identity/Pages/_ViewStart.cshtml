@@ -1,3 +1,14 @@
-﻿@{
+﻿@using SchuelerCheckIN2025.Models
+@using Newtonsoft.Json
+@using System.Text.Json;
+
+@{
     Layout = "/Views/Shared/_Layout.cshtml";
+}
+@{
+
+    var json = Context.Session.GetString("LoggedInUser");
+    var user = !string.IsNullOrEmpty(json) ? JsonConvert.DeserializeObject<Schuelerdaten>(json) : null;
+
+    ViewBag.IsAdmin = user?.admin;
 }

@@ -14,6 +14,11 @@ using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Logging;
+using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.BlazorIdentity.Pages.Manage;
+using System.Text.Json;
+using SchuelerCheckIN2025.Models;
+using SchuelerCheckIN2025.Data;
+
 
 namespace SchuelerCheckIN2025.Areas.Identity.Pages.Account
 {
@@ -21,11 +26,14 @@ namespace SchuelerCheckIN2025.Areas.Identity.Pages.Account
     {
         private readonly SignInManager<IdentityUser> _signInManager;
         private readonly ILogger<LoginModel> _logger;
+        private readonly ApplicationDbContext _context;
 
-        public LoginModel(SignInManager<IdentityUser> signInManager, ILogger<LoginModel> logger)
+        public LoginModel(SignInManager<IdentityUser> signInManager, ILogger<LoginModel> logger, ApplicationDbContext context)
         {
             _signInManager = signInManager;
             _logger = logger;
+            _context = context;
+
         }
 
         /// <summary>
@@ -114,8 +122,17 @@ namespace SchuelerCheckIN2025.Areas.Identity.Pages.Account
                 var result = await _signInManager.PasswordSignInAsync(Input.Email, Input.Password, Input.RememberMe, lockoutOnFailure: false);
                 if (result.Succeeded)
                 {
+                    var user = _context.Schuelerdatenset.FirstOrDefault(u => u.email == Input.Email);
+
+                    if (user != null)
+                    {
+                        var json = JsonSerializer.Serialize(user);
+                        HttpContext.Session.SetString("LoggedInUser", json);
+                    }
+
                     _logger.LogInformation("User logged in.");
                     return LocalRedirect(returnUrl);
+
                 }
                 if (result.RequiresTwoFactor)
                 {
@@ -132,6 +149,7 @@ namespace SchuelerCheckIN2025.Areas.Identity.Pages.Account
                     return Page();
                 }
             }
+
 
             // If we got this far, something failed, redisplay form
             return Page();

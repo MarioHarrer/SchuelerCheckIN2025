@@ -29,6 +29,14 @@ namespace SchuelerCheckIN2025
             // MVC und Razor Pages
             builder.Services.AddControllersWithViews();
 
+            builder.Services.AddDistributedMemoryCache(); // Session-Zwischenspeicher im RAM
+            builder.Services.AddSession(options =>
+            {
+                options.IdleTimeout = TimeSpan.FromMinutes(30); // Session-Lebensdauer
+                options.Cookie.HttpOnly = true;
+                options.Cookie.IsEssential = true;
+            });
+
             var app = builder.Build();
 
             // Konfiguration der HTTP-Anforderungs-Pipeline
@@ -46,6 +54,9 @@ namespace SchuelerCheckIN2025
             app.UseStaticFiles();
 
             app.UseRouting();
+
+            app.UseSession();
+
 
             app.UseAuthorization();
 
