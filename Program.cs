@@ -23,7 +23,7 @@ namespace SchuelerCheckIN2025
             builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
             // Identity Setup
-            builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = false)
+            builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
                 .AddEntityFrameworkStores<ApplicationDbContext>();
 
             // MVC und Razor Pages
@@ -52,7 +52,14 @@ namespace SchuelerCheckIN2025
             app.MapPost("/api/anwesend", (ApplicationDbContext context, ScanData scan) =>
             {
                 Schuelerdaten daten  = context.Schuelerdatenset.Where(s => s.schluessel.Equals(scan.Scan)).Single();
-                daten.anwesend = true;
+                if(daten.anwesend== false)
+                {
+                    daten.anwesend = true;
+                }
+                else
+                {
+                    daten.anwesend = false;
+                }
                 context.SaveChanges();
             });
 
