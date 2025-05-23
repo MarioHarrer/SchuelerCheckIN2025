@@ -7,16 +7,14 @@
 
 <div class="text-center" style="display: flex; justify-content: center; align-items: center;">
     <img src="/Download.jpg" alt="Bildbeschreibung" style="width: 50px; height: auto; margin-right: 15px;">
-    <h1 class="display-4">Welcome</h1>
+    <h1 class="display-4">Grüß Gott</h1>
 </div>
 
 @if (ViewData["QRCode"] != null)
 {
     <div class="text-center" style="display: flex; justify-content: center; align-items: center">
-            <img src="@ViewData["QRCode"]" alt="QR-Code" style="width: 325px; height: 325px;"/>
+        <img src="@ViewData["QRCode"]" alt="QR-Code" style="width: 325px; height: 325px;"/>
     </div>
-    
-
 }
 
 @*

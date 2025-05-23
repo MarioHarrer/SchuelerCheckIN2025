@@ -46,3 +46,18 @@ button.accept-policy {
   white-space: nowrap;
   line-height: 60px;
 }
+.navbar-custom {
+    background-color: #c10a25; /* eigenes Rot */
+}
+.navbar-custom .navbar-brand,
+.navbar-custom .nav-link {
+    color: white !important;
+}
+
+.navbar-custom .nav-link:hover,
+.navbar-custom .nav-link:focus {
+    color: white !important;
+    text-decoration: underline; /* optional */
+}
+
+
