@@ -11,6 +11,7 @@
 
         public Boolean admin { get; set; }
 
+        public DateTime zeit {  get; set; }
 
     }
 }
