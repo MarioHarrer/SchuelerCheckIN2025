@@ -8,5 +8,10 @@
         public string klasse {  get; set; }
 
         public Boolean anwesend { get; set; }
+
+        public Boolean admin { get; set; }
+
+        public TimeOnly zeit {  get; set; }
+
     }
 }

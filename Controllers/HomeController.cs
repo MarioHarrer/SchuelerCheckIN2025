@@ -26,6 +26,7 @@ namespace SchuelerCheckIN2025.Controllers
             _logger = logger;
             _context = context;
             _userManager = userManager;
+
         }
 
         //public async Task<IActionResult> Index()
@@ -112,8 +113,10 @@ namespace SchuelerCheckIN2025.Controllers
                     string uuid = GetOrCreateUuidd(user);
                     string qrCodeBase64 = GenerateQrCodeBase64(uuid);
                     ViewData["QRCode"] = "data:image/png;base64," + qrCodeBase64;
+                    ViewBag.isAdmin = _context.Schuelerdatenset.Where(u => u.email == user.Email).First().admin;
                 }
             }
+
 
             return View();
         }
@@ -150,6 +153,7 @@ namespace SchuelerCheckIN2025.Controllers
                 schluessel = uuid,
                 klasse = klasse,
                 anwesend = false,
+                admin = false,
             };
 
             context.Schuelerdatenset.Add(schuelerdaten);
@@ -220,7 +224,7 @@ namespace SchuelerCheckIN2025.Controllers
         {
             var model = new AnwesenheitsViewModel
             {
-                SelectedClass = anwesenheitsview.SelectedClass,
+                SelectedClass = anwesenheitsview.SelectedClass == null ? " " : anwesenheitsview.SelectedClass,
                 ClassList = new List<SelectListItem>
         {
             new SelectListItem { Value = "3AHINF", Text = "3AHINF" },
