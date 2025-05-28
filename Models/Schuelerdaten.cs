@@ -11,7 +11,7 @@
 
         public Boolean admin { get; set; }
 
-        public DateTime zeit {  get; set; }
+        public TimeOnly zeit {  get; set; }
 
     }
 }
