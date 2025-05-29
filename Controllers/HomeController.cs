@@ -154,6 +154,8 @@ namespace SchuelerCheckIN2025.Controllers
                 klasse = klasse,
                 anwesend = false,
                 admin = false,
+                zeit = new TimeOnly(7, 40)
+
             };
 
             context.Schuelerdatenset.Add(schuelerdaten);
@@ -231,7 +233,7 @@ namespace SchuelerCheckIN2025.Controllers
             new SelectListItem { Value = "2AHINF", Text = "2AHINF" },
             new SelectListItem { Value = "1AHINF", Text = "1AHINF" },
         },
-                Students = _context.Schuelerdatenset.Where(s => !s.anwesend).ToList() // erstmal leer
+                Students = _context.Schuelerdatenset.Where(s => !s.anwesend && !s.admin).ToList() // erstmal leer
             };
             
             return View(model);

@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using SchuelerCheckIN2025.Data;
 using Microsoft.Extensions.DependencyInjection;
 using SchuelerCheckIN2025.Models;
+using SchuelerCheckIN2025;
 
 namespace SchuelerCheckIN2025
 {
@@ -37,6 +38,8 @@ namespace SchuelerCheckIN2025
                 options.Cookie.IsEssential = true;
             });
 
+            builder.Services.AddHostedService<ZeitResetWorker>();
+
             var app = builder.Build();
 
             // Konfiguration der HTTP-Anforderungs-Pipeline
@@ -70,6 +73,7 @@ namespace SchuelerCheckIN2025
                 else
                 {
                     daten.anwesend = false;
+                    daten.zeit = TimeOnly.FromDateTime(DateTime.Now);
                 }
                 context.SaveChanges();
             });
