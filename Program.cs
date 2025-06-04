@@ -11,6 +11,10 @@ namespace SchuelerCheckIN2025
     {
         public static void Main(string[] args)
         {
+
+            //Testtext Ignorieren
+
+
             var builder = WebApplication.CreateBuilder(args);
 
             // SQLite-Verbindung anstelle von MSSQL
