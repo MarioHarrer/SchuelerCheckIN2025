@@ -1,20 +1,17 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.Extensions.Logging;
 using SchuelerCheckIN2025.Data;
 using SchuelerCheckIN2025.Models;
 using System.Diagnostics;
-using System.Drawing;
-using System.Net.NetworkInformation;
-using System.Drawing;
-using ZXing.Common;
 using ZXing;
-using ZXing.Rendering;
-using static System.Net.Mime.MediaTypeNames;
-using System.Text;
-using Microsoft.AspNetCore.Mvc.Rendering;
+using ZXing.Common;
+using ZXing.SkiaSharp;
+using SkiaSharp;
 
 namespace SchuelerCheckIN2025.Controllers
-{ 
+{
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
@@ -26,82 +23,7 @@ namespace SchuelerCheckIN2025.Controllers
             _logger = logger;
             _context = context;
             _userManager = userManager;
-
         }
-
-        //public async Task<IActionResult> Index()
-        //{
-        //    bool IsAuth = (User.Identity is not null) ? User.Identity.IsAuthenticated : false;
-
-        //    if (IsAuth)
-        //    {
-        //        var userName = User.Identity?.Name;
-        //        var user = await _userManager.FindByNameAsync(userName);
-
-        //        if (user != null)
-        //        {
-        //            // Prüfen, ob bereits ein QR-Code existiert
-        //            var letzterEintrag = _context.Schuelerdatenset
-        //                .Where(s => s.email == user.Email)
-        //                .OrderByDescending(s => s.Id) // Annahme: Id ist aufsteigend
-        //                .FirstOrDefault();
-
-        //            string uuid;
-
-        //            if (letzterEintrag == null)
-        //            {
-        //                // Neuen Eintrag erstellen
-        //                uuid = Guid.NewGuid().ToString();
-
-        //                var schuelerdaten = new Schuelerdaten
-        //                {
-        //                    email = user.Email,
-        //                    schluessel = uuid,
-        //                    klasse = "3AHINF"
-        //                };
-
-        //                _context.Schuelerdatenset.Add(schuelerdaten);
-        //                _context.SaveChanges();
-        //            }
-        //            else
-        //            {
-        //                // Falls es bereits einen QR-Code gibt, nutze ihn
-        //                uuid = letzterEintrag.schluessel;
-        //            }
-
-        //            // QR-Code generieren
-        //            int width = 300;
-        //            int height = 300;
-        //            var writer = new BarcodeWriter<Bitmap>()
-        //            {
-        //                Format = BarcodeFormat.QR_CODE,
-        //                Renderer = new ZXing.Windows.Compatibility.BitmapRenderer(),
-        //                Options = new EncodingOptions
-        //                {
-        //                    Height = height,
-        //                    Width = width,
-        //                    Margin = 1
-        //                }
-        //            };
-
-        //            using (var qrCodeImage = writer.Write(uuid))
-        //            {
-        //                using (MemoryStream ms = new MemoryStream())
-        //                {
-        //                    qrCodeImage.Save(ms, System.Drawing.Imaging.ImageFormat.Png);
-        //                    byte[] byteImage = ms.ToArray();
-        //                    string base64String = Convert.ToBase64String(byteImage);
-
-        //                    // Base64-String in ViewData speichern
-        //                    ViewData["QRCode"] = "data:image/png;base64," + base64String;
-        //                }
-        //            }
-        //        }
-        //    }
-
-        //    return View();
-
-        //}
 
         public async Task<IActionResult> Index()
         {
@@ -110,13 +32,14 @@ namespace SchuelerCheckIN2025.Controllers
                 var user = await GetCurrentUserAsync();
                 if (user != null)
                 {
-                    string uuid = GetOrCreateUuidd(user);
+                    string uuid = GetOrCreateUuid(user);
                     string qrCodeBase64 = GenerateQrCodeBase64(uuid);
                     ViewData["QRCode"] = "data:image/png;base64," + qrCodeBase64;
-                    ViewBag.isAdmin = _context.Schuelerdatenset.Where(u => u.email == user.Email).First().admin;
+
+                    var eintrag = _context.Schuelerdatenset.FirstOrDefault(u => u.email == user.Email);
+                    ViewBag.isAdmin = eintrag?.admin ?? false;
                 }
             }
-
 
             return View();
         }
@@ -127,7 +50,7 @@ namespace SchuelerCheckIN2025.Controllers
             return await _userManager.FindByNameAsync(userName);
         }
 
-        private string GetOrCreateUuidd(IdentityUser user)
+        private string GetOrCreateUuid(IdentityUser user)
         {
             var letzterEintrag = _context.Schuelerdatenset
                 .Where(s => s.email == user.Email)
@@ -136,15 +59,14 @@ namespace SchuelerCheckIN2025.Controllers
 
             if (letzterEintrag == null)
             {
-                Schuelerdaten daten = createDatenFromUser(user, _context, "UNBEKANNT");
-
+                var daten = CreateDatenFromUser(user, _context, "UNBEKANNT");
                 return daten.schluessel;
             }
 
             return letzterEintrag.schluessel;
         }
 
-        public static Schuelerdaten createDatenFromUser(IdentityUser user, ApplicationDbContext context, string klasse)
+        public static Schuelerdaten CreateDatenFromUser(IdentityUser user, ApplicationDbContext context, string klasse)
         {
             string uuid = Guid.NewGuid().ToString();
             var schuelerdaten = new Schuelerdaten
@@ -155,7 +77,6 @@ namespace SchuelerCheckIN2025.Controllers
                 anwesend = false,
                 admin = false,
                 zeit = new TimeOnly(7, 40)
-
             };
 
             context.Schuelerdatenset.Add(schuelerdaten);
@@ -168,7 +89,8 @@ namespace SchuelerCheckIN2025.Controllers
         {
             int width = 300;
             int height = 300;
-            var writer = new ZXing.SkiaSharp.BarcodeWriter
+
+            var writer = new BarcodeWriter
             {
                 Format = BarcodeFormat.QR_CODE,
                 Options = new EncodingOptions
@@ -180,45 +102,29 @@ namespace SchuelerCheckIN2025.Controllers
             };
 
             var bitmap = writer.Write(uuid);
-            using var image = SkiaSharp.SKImage.FromBitmap(bitmap);
-            using var data = image.Encode(SkiaSharp.SKEncodedImageFormat.Png, 100);
+            using var image = SKImage.FromBitmap(bitmap);
+            using var data = image.Encode(SKEncodedImageFormat.Png, 100);
             return Convert.ToBase64String(data.ToArray());
         }
-
-
-
-     
-        private async Task<IdentityUser?> CheckIfUuidExistsAsync(string scannedUuid)
-        {
-            var schuelerdaten = _context.Schuelerdatenset
-                .FirstOrDefault(s => s.schluessel == scannedUuid);
-
-            if (schuelerdaten != null)
-            { 
-                return await _userManager.FindByEmailAsync(schuelerdaten.email);
-            }
-            return null;
-        }
-
-
 
         public IActionResult Anwesenheit(AnwesenheitsViewModel anwesenheitsview)
         {
             var model = new AnwesenheitsViewModel
             {
-                SelectedClass = anwesenheitsview.SelectedClass == null ? " " : anwesenheitsview.SelectedClass,
+                SelectedClass = anwesenheitsview.SelectedClass ?? " ",
                 ClassList = new List<SelectListItem>
-        {
-            new SelectListItem { Value = "3AHINF", Text = "3AHINF" },
-            new SelectListItem { Value = "2AHINF", Text = "2AHINF" },
-            new SelectListItem { Value = "1AHINF", Text = "1AHINF" },
-        },
-                Students = _context.Schuelerdatenset.Where(s => !s.anwesend && !s.admin).ToList() // erstmal leer
+                {
+                    new SelectListItem { Value = "3AHINF", Text = "3AHINF" },
+                    new SelectListItem { Value = "2AHINF", Text = "2AHINF" },
+                    new SelectListItem { Value = "1AHINF", Text = "1AHINF" },
+                },
+                Students = _context.Schuelerdatenset
+                    .Where(s => !s.anwesend && !s.admin)
+                    .ToList()
             };
-            
+
             return View(model);
         }
-
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
@@ -226,6 +132,17 @@ namespace SchuelerCheckIN2025.Controllers
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
         }
 
-        
+        private async Task<IdentityUser?> CheckIfUuidExistsAsync(string scannedUuid)
+        {
+            var schuelerdaten = _context.Schuelerdatenset
+                .FirstOrDefault(s => s.schluessel == scannedUuid);
+
+            if (schuelerdaten != null)
+            {
+                return await _userManager.FindByEmailAsync(schuelerdaten.email);
+            }
+
+            return null;
+        }
     }
 }

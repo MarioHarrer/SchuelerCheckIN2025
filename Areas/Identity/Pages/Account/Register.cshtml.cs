@@ -147,7 +147,7 @@ namespace SchuelerCheckIN2025.Areas.Identity.Pages.Account
                 if (result.Succeeded)
                 {
                     _logger.LogInformation("User created a new account with password.");
-                    HomeController.createDatenFromUser(user, _context, Input.Klasse);
+                    HomeController.CreateDatenFromUser(user, _context, Input.Klasse);
 
                     var userId = await _userManager.GetUserIdAsync(user);
                     var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
