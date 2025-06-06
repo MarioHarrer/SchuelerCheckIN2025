@@ -155,7 +155,15 @@ namespace SchuelerCheckIN2025.Controllers
                 admin = false,
                 zeit = new TimeOnly(7, 40)
 
+            {
+
+            }
+
             };
+            if(klasse == "Teacher")
+            {
+                schuelerdaten.admin = true;
+            }
 
             context.Schuelerdatenset.Add(schuelerdaten);
             context.SaveChanges();
