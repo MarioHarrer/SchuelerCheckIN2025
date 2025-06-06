@@ -58,6 +58,9 @@ namespace SchuelerCheckIN2025.Areas.Identity.Pages.Account
             _context = context;
             Klasse = new List<SelectListItem>
         {
+            new SelectListItem { Value = "Teacher", Text = "Teacher" },
+            new SelectListItem { Value = "5AHINF", Text = "5AHINF" },
+            new SelectListItem { Value = "4AHINF", Text = "4AHINF" },
             new SelectListItem { Value = "3AHINF", Text = "3AHINF" },
             new SelectListItem { Value = "2AHINF", Text = "2AHINF" },
             new SelectListItem { Value = "1AHINF", Text = "1AHINF" },

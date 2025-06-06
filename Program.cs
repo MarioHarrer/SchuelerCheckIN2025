@@ -23,7 +23,7 @@ namespace SchuelerCheckIN2025
             builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
             // Identity Setup
-            builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = false)
+            builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
                 .AddEntityFrameworkStores<ApplicationDbContext>();
 
             // MVC und Razor Pages
