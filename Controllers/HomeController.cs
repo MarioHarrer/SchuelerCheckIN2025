@@ -168,10 +168,9 @@ namespace SchuelerCheckIN2025.Controllers
         {
             int width = 300;
             int height = 300;
-            var writer = new BarcodeWriter<Bitmap>()
+            var writer = new ZXing.SkiaSharp.BarcodeWriter
             {
                 Format = BarcodeFormat.QR_CODE,
-                Renderer = new ZXing.Windows.Compatibility.BitmapRenderer(),
                 Options = new EncodingOptions
                 {
                     Height = height,
@@ -180,34 +179,15 @@ namespace SchuelerCheckIN2025.Controllers
                 }
             };
 
-            using (var qrCodeImage = writer.Write(uuid))
-            using (MemoryStream ms = new MemoryStream())
-            {
-                qrCodeImage.Save(ms, System.Drawing.Imaging.ImageFormat.Png);
-                byte[] byteImage = ms.ToArray();
-                return Convert.ToBase64String(byteImage);
-            }
+            var bitmap = writer.Write(uuid);
+            using var image = SkiaSharp.SKImage.FromBitmap(bitmap);
+            using var data = image.Encode(SkiaSharp.SKEncodedImageFormat.Png, 100);
+            return Convert.ToBase64String(data.ToArray());
         }
 
 
-        /*private async Task<IdentityUser?> CheckIfUuidExists(string scannedUuid)
-        {
-            var alleUuids = _context.Schuelerdatenset
-                .Select(s => s.schluessel)
-                .ToList();
 
-            foreach (var uuid in alleUuids)
-            {
-                if (uuid == scannedUuid)
-                {
-                    var userName = User.Identity?.Name;
-                    return await _userManager.FindByNameAsync(userName);
-                }
-            }
-
-            return null;
-        }*/
-
+     
         private async Task<IdentityUser?> CheckIfUuidExistsAsync(string scannedUuid)
         {
             var schuelerdaten = _context.Schuelerdatenset
