@@ -14,7 +14,7 @@ using System.Text;
 using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace SchuelerCheckIN2025.Controllers
-{ 
+{
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
@@ -111,8 +111,7 @@ namespace SchuelerCheckIN2025.Controllers
                 if (user != null)
                 {
                     string uuid = GetOrCreateUuidd(user);
-                    string qrCodeBase64 = GenerateQrCodeBase64(uuid);
-                    ViewData["QRCode"] = "data:image/png;base64," + qrCodeBase64;
+                    GenerateQrCodeBase64(uuid);
                     ViewBag.isAdmin = _context.Schuelerdatenset.Where(u => u.email == user.Email).First().admin;
                 }
             }
@@ -154,6 +153,8 @@ namespace SchuelerCheckIN2025.Controllers
                 klasse = klasse,
                 anwesend = false,
                 admin = false,
+                zeit = new TimeOnly(7, 40)
+
             };
 
             context.Schuelerdatenset.Add(schuelerdaten);
@@ -162,14 +163,13 @@ namespace SchuelerCheckIN2025.Controllers
             return schuelerdaten;
         }
 
-        private string GenerateQrCodeBase64(string uuid)
+        private void GenerateQrCodeBase64(string uuid)
         {
-            int width = 300;
-            int height = 300;
-            var writer = new BarcodeWriter<Bitmap>()
+            int width = 100;
+            int height = 100;
+            var writer = new BarcodeWriterSvg
             {
                 Format = BarcodeFormat.QR_CODE,
-                Renderer = new ZXing.Windows.Compatibility.BitmapRenderer(),
                 Options = new EncodingOptions
                 {
                     Height = height,
@@ -178,33 +178,13 @@ namespace SchuelerCheckIN2025.Controllers
                 }
             };
 
-            using (var qrCodeImage = writer.Write(uuid))
-            using (MemoryStream ms = new MemoryStream())
-            {
-                qrCodeImage.Save(ms, System.Drawing.Imaging.ImageFormat.Png);
-                byte[] byteImage = ms.ToArray();
-                return Convert.ToBase64String(byteImage);
-            }
+            var svg = writer.Write(uuid);
+            string svgBase64 = Convert.ToBase64String(Encoding.UTF8.GetBytes(svg.Content));
+            ViewData["QRCode"] = "data:image/svg+xml;base64," + svgBase64;
         }
 
 
-        /*private async Task<IdentityUser?> CheckIfUuidExists(string scannedUuid)
-        {
-            var alleUuids = _context.Schuelerdatenset
-                .Select(s => s.schluessel)
-                .ToList();
 
-            foreach (var uuid in alleUuids)
-            {
-                if (uuid == scannedUuid)
-                {
-                    var userName = User.Identity?.Name;
-                    return await _userManager.FindByNameAsync(userName);
-                }
-            }
-
-            return null;
-        }*/
 
         private async Task<IdentityUser?> CheckIfUuidExistsAsync(string scannedUuid)
         {
@@ -212,7 +192,7 @@ namespace SchuelerCheckIN2025.Controllers
                 .FirstOrDefault(s => s.schluessel == scannedUuid);
 
             if (schuelerdaten != null)
-            { 
+            {
                 return await _userManager.FindByEmailAsync(schuelerdaten.email);
             }
             return null;
@@ -233,9 +213,9 @@ namespace SchuelerCheckIN2025.Controllers
             new SelectListItem { Value = "2AHINF", Text = "2AHINF" },
             new SelectListItem { Value = "1AHINF", Text = "1AHINF" },
         },
-                Students = _context.Schuelerdatenset.Where(s => !s.anwesend).ToList() // erstmal leer
+                Students = _context.Schuelerdatenset.Where(s => !s.anwesend && !s.admin).ToList() // erstmal leer
             };
-            
+
             return View(model);
         }
 
@@ -246,6 +226,6 @@ namespace SchuelerCheckIN2025.Controllers
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
         }
 
-        
+
     }
 }

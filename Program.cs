@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using SchuelerCheckIN2025.Data;
 using Microsoft.Extensions.DependencyInjection;
 using SchuelerCheckIN2025.Models;
+using SchuelerCheckIN2025;
 
 namespace SchuelerCheckIN2025
 {
@@ -10,6 +11,10 @@ namespace SchuelerCheckIN2025
     {
         public static void Main(string[] args)
         {
+
+            //Testtext Ignorieren
+
+
             var builder = WebApplication.CreateBuilder(args);
 
             // SQLite-Verbindung anstelle von MSSQL
@@ -36,6 +41,8 @@ namespace SchuelerCheckIN2025
                 options.Cookie.HttpOnly = true;
                 options.Cookie.IsEssential = true;
             });
+
+            builder.Services.AddHostedService<ZeitResetWorker>();
 
             var app = builder.Build();
 
@@ -70,6 +77,7 @@ namespace SchuelerCheckIN2025
                 else
                 {
                     daten.anwesend = false;
+                    daten.zeit = TimeOnly.FromDateTime(DateTime.Now);
                 }
                 context.SaveChanges();
             });
