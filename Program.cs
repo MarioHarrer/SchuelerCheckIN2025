@@ -24,7 +24,7 @@ namespace SchuelerCheckIN2025
             // DbContext mit SQLite konfigurieren
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseSqlite(connectionString)); 
-
+            
             builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
             // Identity Setup
