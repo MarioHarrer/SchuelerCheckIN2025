@@ -111,7 +111,22 @@ namespace SchuelerCheckIN2025.Controllers
                 if (user != null)
                 {
                     string uuid = GetOrCreateUuidd(user);
-                    GenerateQrCodeBase64(uuid);
+
+                    List<Schuelerdaten> datalist = _context.Schuelerdatenset.ToList();
+                    Schuelerdaten schuelerdaten1 = new Schuelerdaten();
+
+                    foreach(Schuelerdaten s in datalist)
+                    {
+                        if(s.schluessel == uuid)
+                        {
+                            schuelerdaten1 = s;
+                        }
+                    }
+                    if(schuelerdaten1.admin == false)
+                    {
+                        GenerateQrCodeBase64(uuid);
+                        
+                    }
                     ViewBag.isAdmin = _context.Schuelerdatenset.Where(u => u.email == user.Email).First().admin;
                 }
             }
